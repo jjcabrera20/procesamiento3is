@@ -191,6 +191,80 @@ datos_processing <- datos_full %>%
     discriminacion = case_when(
       I_discriminacion == "Sí"~ 1,
       TRUE ~ 0
+    ),
+    doc_col = case_when( 
+      M2_documento_col_ninguno==1 ~ 1,
+      TRUE ~ 0),
+    doc_ven = case_when( 
+      M2_documento_ven_ninguno==1 ~ 1,
+      TRUE ~ 0),
+    seguro_salud = case_when(
+      M4_afiliado_salud == "No"~ 1,
+      TRUE ~ 0
+    ),
+    problemas_salud = case_when(
+      M4_tuvo_problema_salud == "Sí"~ 1,
+      TRUE ~ 0
+    )
+  )|>
+  mutate(
+    barreras_salud_total = rowSums(
+      across(
+        c(
+          M4_barreras_acceso_salud_geog,
+          M4_barreras_acceso_salud_finan,
+          M4_barreras_acceso_salud_transp,
+          M4_barreras_acceso_salud_dispon,
+          M4_barreras_acceso_salud_fisica,
+          M4_barreras_acceso_salud_cultur,
+          M4_barreras_acceso_salud_noafil,
+          M4_barreras_acceso_salud_ninguna,
+          M4_barreras_acceso_salud_otro,
+          M4_barreras_acceso_salud_nosabe,
+          M4_barreras_acceso_salud_noresponde
+        )
+      ), na.rm = TRUE
+    ),
+    barreras_salud = case_when(
+      barreras_salud_total >= 1 ~ 1,
+      TRUE ~ 0),
+    TOTAL_SCORE = titulo_none+
+      homolog_titulo_none+
+      certificado_none+
+      lgbti+
+      menos_12_meses+
+      forma_ingreso+
+      medios_transporte_a+
+      discapacidad+
+      ppt+
+      titulo_none+
+      medios_restringidos+
+      fuente_ingreso+
+      producto_financiero+
+      fuente_alimento_total+
+      salud+
+      alojamiento+
+      problemas_alojamiento+
+      agua_consumo+
+      acceso_agua+
+      enfermedad_agua+
+      restriccion+
+      discriminacion+
+      doc_col+
+      doc_ven+
+      seguro_salud+
+      problemas_salud+
+      barreras_salud
+  )|>
+  mutate(
+    indice_normalizado = (TOTAL_SCORE - min(TOTAL_SCORE, na.rm = TRUE)) /
+      (max(TOTAL_SCORE, na.rm = TRUE) - min(TOTAL_SCORE, na.rm = TRUE)),
+    
+    clasificacion_indice = case_when(
+      indice_normalizado <= 0.33 ~ "Leve",
+      indice_normalizado <= 0.66 ~ "Moderado",
+      indice_normalizado <= 1 ~ "Severo",
+      TRUE ~ NA_character_
     )
   )
 
