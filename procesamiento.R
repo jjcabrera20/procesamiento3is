@@ -268,4 +268,7 @@ datos_processing <- datos_full %>%
     )
   )
 
+
+# View final result
+write_xlsx(datos_full, "withIndexData.xlsx")
   
